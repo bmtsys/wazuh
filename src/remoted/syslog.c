@@ -52,8 +52,9 @@ void HandleSyslog()
     /* Connect to the message queue
      * Exit if it fails.
      */
-    if ((logr.m_queue = StartMQ(DEFAULTQUEUE, WRITE)) < 0) {
-        merror_exit(QUEUE_FATAL, DEFAULTQUEUE);
+    while ((logr.m_queue = StartMQ(DEFAULTQUEUE, WRITE)) < 0) {
+        mwarn(QUEUE_ERROR " Trying again.", DEFAULTQUEUE, strerror(errno));
+        sleep(5);
     }
 
     /* Infinite loop */
@@ -100,8 +101,9 @@ void HandleSyslog()
         if (SendMSG(logr.m_queue, buffer_pt, srcip, SYSLOG_MQ) < 0) {
             merror(QUEUE_ERROR, DEFAULTQUEUE, strerror(errno));
 
-            if ((logr.m_queue = StartMQ(DEFAULTQUEUE, WRITE)) < 0) {
-                merror_exit(QUEUE_FATAL, DEFAULTQUEUE);
+            while ((logr.m_queue = StartMQ(DEFAULTQUEUE, WRITE)) < 0) {
+                mwarn(QUEUE_ERROR " Trying again.", DEFAULTQUEUE, strerror(errno));
+                sleep(5);
             }
         }
     }
